@@ -1,0 +1,19 @@
+{
+  "name": "classroom-platform",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Unified academic and collaborative communication platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:types": "npm run build --workspace=@classroom/types",
+    "dev:web": "npm run dev --workspace=@classroom/web",
+    "docker:up": "docker compose -f infrastructure/docker/docker-compose.yaml up -d",
+    "docker:down": "docker compose -f infrastructure/docker/docker-compose.yaml down"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@classroom/types",
+  "version": "0.0.1",
+  "description": "Shared TypeScript definitions and API contracts for Classroom Platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
