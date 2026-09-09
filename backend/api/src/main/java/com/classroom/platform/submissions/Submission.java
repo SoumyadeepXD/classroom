@@ -3,9 +3,10 @@ package com.classroom.platform.submissions;
 import com.classroom.platform.assignments.Assignment;
 import com.classroom.platform.users.User;
 import jakarta.persistence.*;
-import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -14,11 +15,6 @@ import java.util.UUID;
 @Table(name = "submissions", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"assignment_id", "student_id", "version"})
 })
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Submission {
 
     @Id
@@ -34,15 +30,13 @@ public class Submission {
     private User student;
 
     @Column(nullable = false, length = 30)
-    @Builder.Default
     private String status = "SUBMITTED";
 
     @Column(nullable = false)
-    @Builder.Default
     private Integer version = 1;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "file_ids", columnDefinition = "jsonb", nullable = false)
-    @Builder.Default
     private String fileIds = "[]";
 
     @CreationTimestamp
@@ -56,4 +50,67 @@ public class Submission {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    public Submission() {}
+
+    public Submission(UUID id, Assignment assignment, User student, String status,
+                      Integer version, String fileIds, Instant submittedAt) {
+        this.id = id;
+        this.assignment = assignment;
+        this.student = student;
+        this.status = status != null ? status : "SUBMITTED";
+        this.version = version != null ? version : 1;
+        this.fileIds = fileIds != null ? fileIds : "[]";
+        this.submittedAt = submittedAt;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private UUID id;
+        private Assignment assignment;
+        private User student;
+        private String status = "SUBMITTED";
+        private Integer version = 1;
+        private String fileIds = "[]";
+        private Instant submittedAt;
+
+        public Builder id(UUID id) { this.id = id; return this; }
+        public Builder assignment(Assignment assignment) { this.assignment = assignment; return this; }
+        public Builder student(User student) { this.student = student; return this; }
+        public Builder status(String status) { this.status = status; return this; }
+        public Builder version(Integer version) { this.version = version; return this; }
+        public Builder fileIds(String fileIds) { this.fileIds = fileIds; return this; }
+        public Builder submittedAt(Instant submittedAt) { this.submittedAt = submittedAt; return this; }
+
+        public Submission build() {
+            return new Submission(id, assignment, student, status, version, fileIds, submittedAt);
+        }
+    }
+
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+
+    public Assignment getAssignment() { return assignment; }
+    public void setAssignment(Assignment assignment) { this.assignment = assignment; }
+
+    public User getStudent() { return student; }
+    public void setStudent(User student) { this.student = student; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public Integer getVersion() { return version; }
+    public void setVersion(Integer version) { this.version = version; }
+
+    public String getFileIds() { return fileIds; }
+    public void setFileIds(String fileIds) { this.fileIds = fileIds; }
+
+    public Instant getSubmittedAt() { return submittedAt; }
+    public void setSubmittedAt(Instant submittedAt) { this.submittedAt = submittedAt; }
+
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 }

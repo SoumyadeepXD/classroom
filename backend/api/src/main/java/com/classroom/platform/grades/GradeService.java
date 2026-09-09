@@ -9,7 +9,6 @@ import com.classroom.platform.submissions.Submission;
 import com.classroom.platform.submissions.SubmissionRepository;
 import com.classroom.platform.users.User;
 import com.classroom.platform.users.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +18,22 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class GradeService {
 
     private final GradeRepository gradeRepository;
     private final SubmissionRepository submissionRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
+
+    public GradeService(GradeRepository gradeRepository,
+                        SubmissionRepository submissionRepository,
+                        EnrollmentRepository enrollmentRepository,
+                        UserRepository userRepository) {
+        this.gradeRepository = gradeRepository;
+        this.submissionRepository = submissionRepository;
+        this.enrollmentRepository = enrollmentRepository;
+        this.userRepository = userRepository;
+    }
 
     @Transactional
     public GradeResponse gradeSubmission(UUID submissionId, GradeSubmissionRequest request, UUID userId) {

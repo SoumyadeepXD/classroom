@@ -5,7 +5,6 @@ import com.classroom.platform.messaging.dto.MessageResponse;
 import com.classroom.platform.messaging.dto.SendMessageRequest;
 import com.classroom.platform.security.UserPrincipal;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,10 +15,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
 public class MessageController {
 
     private final MessageService messageService;
+
+    public MessageController(MessageService messageService) {
+        this.messageService = messageService;
+    }
 
     @GetMapping("/channels/{channelId}/messages")
     public ResponseEntity<ApiResponse<List<MessageResponse>>> getChannelMessages(

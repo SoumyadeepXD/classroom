@@ -4,7 +4,6 @@ import com.classroom.platform.common.ApiResponse;
 import com.classroom.platform.security.UserPrincipal;
 import com.classroom.platform.submissions.dto.CreateSubmissionRequest;
 import com.classroom.platform.submissions.dto.SubmissionResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,10 +14,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/assignments/{assignmentId}/submissions")
-@RequiredArgsConstructor
 public class SubmissionController {
 
     private final SubmissionService submissionService;
+
+    public SubmissionController(SubmissionService submissionService) {
+        this.submissionService = submissionService;
+    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<SubmissionResponse>> submitWork(

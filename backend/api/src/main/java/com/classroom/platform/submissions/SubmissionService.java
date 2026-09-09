@@ -10,7 +10,6 @@ import com.classroom.platform.submissions.dto.SubmissionResponse;
 import com.classroom.platform.users.User;
 import com.classroom.platform.users.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +21,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class SubmissionService {
 
     private final SubmissionRepository submissionRepository;
@@ -30,6 +28,16 @@ public class SubmissionService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public SubmissionService(SubmissionRepository submissionRepository,
+                             AssignmentRepository assignmentRepository,
+                             EnrollmentRepository enrollmentRepository,
+                             UserRepository userRepository) {
+        this.submissionRepository = submissionRepository;
+        this.assignmentRepository = assignmentRepository;
+        this.enrollmentRepository = enrollmentRepository;
+        this.userRepository = userRepository;
+    }
 
     @Transactional
     public SubmissionResponse submitWork(UUID assignmentId, CreateSubmissionRequest request, UUID userId) {
@@ -40,7 +48,6 @@ public class SubmissionService {
             throw new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "You are not enrolled in this classroom");
         }
 
-        // Check lock date
         if (assignment.getLockDate() != null && Instant.now().isAfter(assignment.getLockDate())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "SUBMISSIONS_CLOSED", "Submissions for this assignment are closed");
         }
@@ -109,10 +116,7 @@ public class SubmissionService {
                 .version(submission.getVersion())
                 .fileIds(submission.getFileIds())
                 .submittedAt(submission.getSubmittedAt())
-                .receipt(SubmissionResponse.TurnInReceipt.builder()
-                        .receiptCode(receiptCode)
-                        .issuedAt(submission.getSubmittedAt().toString())
-                        .build())
+                .receipt(new SubmissionResponse.TurnInReceipt(receiptCode, submission.getSubmittedAt().toString()))
                 .build();
     }
 }

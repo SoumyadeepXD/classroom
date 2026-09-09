@@ -5,7 +5,6 @@ import com.classroom.platform.assignments.dto.CreateAssignmentRequest;
 import com.classroom.platform.common.ApiResponse;
 import com.classroom.platform.security.UserPrincipal;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,10 +15,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
 public class AssignmentController {
 
     private final AssignmentService assignmentService;
+
+    public AssignmentController(AssignmentService assignmentService) {
+        this.assignmentService = assignmentService;
+    }
 
     @GetMapping("/classrooms/{classroomId}/assignments")
     public ResponseEntity<ApiResponse<List<AssignmentResponse>>> getClassroomAssignments(

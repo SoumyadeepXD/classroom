@@ -2,15 +2,7 @@ package com.classroom.platform.classrooms.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class CreateClassroomRequest {
 
     @NotBlank(message = "Course name is required")
@@ -22,4 +14,21 @@ public class CreateClassroomRequest {
     private String courseCode;
 
     private String syllabus;
+
+    public CreateClassroomRequest() {}
+
+    public CreateClassroomRequest(String name, String courseCode, String syllabus) {
+        this.name = name;
+        this.courseCode = courseCode;
+        this.syllabus = syllabus;
+    }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getCourseCode() { return courseCode; }
+    public void setCourseCode(String courseCode) { this.courseCode = courseCode; }
+
+    public String getSyllabus() { return syllabus; }
+    public void setSyllabus(String syllabus) { this.syllabus = syllabus; }
 }

@@ -10,8 +10,8 @@ import com.classroom.platform.classrooms.dto.JoinClassroomRequest;
 import com.classroom.platform.common.ApiException;
 import com.classroom.platform.users.User;
 import com.classroom.platform.users.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,16 +22,28 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class ClassroomService {
+
+    private static final Logger log = LoggerFactory.getLogger(ClassroomService.class);
 
     private final ClassroomRepository classroomRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final ChannelCategoryRepository categoryRepository;
     private final ChannelRepository channelRepository;
+
+    public ClassroomService(ClassroomRepository classroomRepository,
+                            EnrollmentRepository enrollmentRepository,
+                            UserRepository userRepository,
+                            ChannelCategoryRepository categoryRepository,
+                            ChannelRepository channelRepository) {
+        this.classroomRepository = classroomRepository;
+        this.enrollmentRepository = enrollmentRepository;
+        this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
+        this.channelRepository = channelRepository;
+    }
 
     private static final String CODE_CHARS = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -54,7 +66,6 @@ public class ClassroomService {
 
         classroom = classroomRepository.save(classroom);
 
-        // Enroll creator as TEACHER
         Enrollment teacherEnrollment = Enrollment.builder()
                 .classroom(classroom)
                 .user(user)
@@ -62,7 +73,6 @@ public class ClassroomService {
                 .build();
         enrollmentRepository.save(teacherEnrollment);
 
-        // Scaffold default channels
         createDefaultChannels(classroom);
 
         return toResponse(classroom, "TEACHER");

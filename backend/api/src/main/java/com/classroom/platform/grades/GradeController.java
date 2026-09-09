@@ -5,7 +5,6 @@ import com.classroom.platform.grades.dto.GradeResponse;
 import com.classroom.platform.grades.dto.GradeSubmissionRequest;
 import com.classroom.platform.security.UserPrincipal;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +14,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
 public class GradeController {
 
     private final GradeService gradeService;
+
+    public GradeController(GradeService gradeService) {
+        this.gradeService = gradeService;
+    }
 
     @PostMapping("/submissions/{submissionId}/grades")
     public ResponseEntity<ApiResponse<GradeResponse>> gradeSubmission(

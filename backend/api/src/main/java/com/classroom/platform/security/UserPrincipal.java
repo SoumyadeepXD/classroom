@@ -1,8 +1,6 @@
 package com.classroom.platform.security;
 
 import com.classroom.platform.users.User;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,8 +9,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-@Getter
-@AllArgsConstructor
 public class UserPrincipal implements UserDetails {
 
     private final UUID id;
@@ -21,6 +17,16 @@ public class UserPrincipal implements UserDetails {
     private final String password;
     private final String displayName;
     private final Collection<? extends GrantedAuthority> authorities;
+
+    public UserPrincipal(UUID id, UUID institutionId, String email, String password,
+                         String displayName, Collection<? extends GrantedAuthority> authorities) {
+        this.id = id;
+        this.institutionId = institutionId;
+        this.email = email;
+        this.password = password;
+        this.displayName = displayName;
+        this.authorities = authorities;
+    }
 
     public static UserPrincipal create(User user) {
         List<GrantedAuthority> authorities = List.of(
@@ -37,28 +43,29 @@ public class UserPrincipal implements UserDetails {
         );
     }
 
-    @Override
-    public String getUsername() {
-        return email;
-    }
+    public UUID getId() { return id; }
+    public UUID getInstitutionId() { return institutionId; }
+    public String getEmail() { return email; }
+    public String getDisplayName() { return displayName; }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+    public Collection<? extends GrantedAuthority> getAuthorities() { return authorities; }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+    public String getPassword() { return password; }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+    public String getUsername() { return email; }
 
     @Override
-    public boolean isEnabled() {
-        return true;
-    }
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return true; }
 }

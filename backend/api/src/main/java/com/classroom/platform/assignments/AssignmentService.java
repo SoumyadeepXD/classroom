@@ -7,7 +7,6 @@ import com.classroom.platform.classrooms.ClassroomRepository;
 import com.classroom.platform.classrooms.Enrollment;
 import com.classroom.platform.classrooms.EnrollmentRepository;
 import com.classroom.platform.common.ApiException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +16,19 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class AssignmentService {
 
     private final AssignmentRepository assignmentRepository;
     private final ClassroomRepository classroomRepository;
     private final EnrollmentRepository enrollmentRepository;
+
+    public AssignmentService(AssignmentRepository assignmentRepository,
+                             ClassroomRepository classroomRepository,
+                             EnrollmentRepository enrollmentRepository) {
+        this.assignmentRepository = assignmentRepository;
+        this.classroomRepository = classroomRepository;
+        this.enrollmentRepository = enrollmentRepository;
+    }
 
     @Transactional(readOnly = true)
     public List<AssignmentResponse> getClassroomAssignments(UUID classroomId, UUID userId) {

@@ -3,17 +3,8 @@ package com.classroom.platform.channels.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.UUID;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class CreateChannelRequest {
 
     @NotBlank(message = "Channel name is required")
@@ -25,4 +16,21 @@ public class CreateChannelRequest {
     private String type;
 
     private UUID categoryId;
+
+    public CreateChannelRequest() {}
+
+    public CreateChannelRequest(String name, String type, UUID categoryId) {
+        this.name = name;
+        this.type = type;
+        this.categoryId = categoryId;
+    }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+
+    public UUID getCategoryId() { return categoryId; }
+    public void setCategoryId(UUID categoryId) { this.categoryId = categoryId; }
 }

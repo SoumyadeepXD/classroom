@@ -6,7 +6,6 @@ import com.classroom.platform.classrooms.dto.JoinClassroomRequest;
 import com.classroom.platform.common.ApiResponse;
 import com.classroom.platform.security.UserPrincipal;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,10 +17,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/classrooms")
-@RequiredArgsConstructor
 public class ClassroomController {
 
     private final ClassroomService classroomService;
+
+    public ClassroomController(ClassroomService classroomService) {
+        this.classroomService = classroomService;
+    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<ClassroomResponse>> createClassroom(

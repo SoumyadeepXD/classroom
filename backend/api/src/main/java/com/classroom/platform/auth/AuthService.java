@@ -10,8 +10,8 @@ import com.classroom.platform.security.JwtTokenProvider;
 import com.classroom.platform.security.UserPrincipal;
 import com.classroom.platform.users.User;
 import com.classroom.platform.users.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,16 +21,28 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.util.UUID;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final InstitutionRepository institutionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final StringRedisTemplate redisTemplate;
+
+    public AuthService(UserRepository userRepository,
+                       InstitutionRepository institutionRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtTokenProvider jwtTokenProvider,
+                       StringRedisTemplate redisTemplate) {
+        this.userRepository = userRepository;
+        this.institutionRepository = institutionRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.redisTemplate = redisTemplate;
+    }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -43,7 +55,6 @@ public class AuthService {
             institution = institutionRepository.findBySlug(request.getInstitutionSlug())
                     .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "INSTITUTION_NOT_FOUND", "Institution not found with slug: " + request.getInstitutionSlug()));
         } else {
-            // Default institution fallback or create root institution if none exists
             institution = institutionRepository.findBySlug("default")
                     .orElseGet(() -> institutionRepository.save(Institution.builder()
                             .name("Default Institution")
@@ -82,7 +93,6 @@ public class AuthService {
         String accessToken = jwtTokenProvider.generateAccessToken(principal);
         String refreshToken = UUID.randomUUID().toString();
 
-        // Store refresh token in Redis with 7-day TTL (ADR-002)
         try {
             redisTemplate.opsForValue().set(
                     "refresh_token:" + refreshToken,
@@ -97,12 +107,7 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .expiresIn(jwtTokenProvider.getAccessTokenExpirationSeconds())
-                .user(AuthResponse.UserDto.builder()
-                        .id(user.getId())
-                        .email(user.getEmail())
-                        .displayName(user.getDisplayName())
-                        .systemRole(user.getSystemRole())
-                        .build())
+                .user(new AuthResponse.UserDto(user.getId(), user.getEmail(), user.getDisplayName(), user.getSystemRole()))
                 .build();
     }
 }

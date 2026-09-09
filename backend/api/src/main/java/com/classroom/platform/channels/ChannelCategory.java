@@ -2,17 +2,10 @@ package com.classroom.platform.channels;
 
 import com.classroom.platform.classrooms.Classroom;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.UUID;
 
 @Entity
 @Table(name = "channel_categories")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class ChannelCategory {
 
     @Id
@@ -27,6 +20,46 @@ public class ChannelCategory {
     private String name;
 
     @Column(nullable = false)
-    @Builder.Default
     private Integer position = 0;
+
+    public ChannelCategory() {}
+
+    public ChannelCategory(UUID id, Classroom classroom, String name, Integer position) {
+        this.id = id;
+        this.classroom = classroom;
+        this.name = name;
+        this.position = position != null ? position : 0;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private UUID id;
+        private Classroom classroom;
+        private String name;
+        private Integer position = 0;
+
+        public Builder id(UUID id) { this.id = id; return this; }
+        public Builder classroom(Classroom classroom) { this.classroom = classroom; return this; }
+        public Builder name(String name) { this.name = name; return this; }
+        public Builder position(Integer position) { this.position = position; return this; }
+
+        public ChannelCategory build() {
+            return new ChannelCategory(id, classroom, name, position);
+        }
+    }
+
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+
+    public Classroom getClassroom() { return classroom; }
+    public void setClassroom(Classroom classroom) { this.classroom = classroom; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public Integer getPosition() { return position; }
+    public void setPosition(Integer position) { this.position = position; }
 }

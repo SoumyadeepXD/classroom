@@ -5,7 +5,6 @@ import com.classroom.platform.channels.dto.CreateChannelRequest;
 import com.classroom.platform.common.ApiResponse;
 import com.classroom.platform.security.UserPrincipal;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,10 +15,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/classrooms/{classroomId}/channels")
-@RequiredArgsConstructor
 public class ChannelController {
 
     private final ChannelService channelService;
+
+    public ChannelController(ChannelService channelService) {
+        this.channelService = channelService;
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ChannelResponse>>> getClassroomChannels(

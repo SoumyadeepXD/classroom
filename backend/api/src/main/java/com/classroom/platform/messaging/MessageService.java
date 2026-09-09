@@ -8,8 +8,8 @@ import com.classroom.platform.messaging.dto.MessageResponse;
 import com.classroom.platform.messaging.dto.SendMessageRequest;
 import com.classroom.platform.users.User;
 import com.classroom.platform.users.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -21,16 +21,28 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class MessageService {
+
+    private static final Logger log = LoggerFactory.getLogger(MessageService.class);
 
     private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
+
+    public MessageService(MessageRepository messageRepository,
+                          ChannelRepository channelRepository,
+                          EnrollmentRepository enrollmentRepository,
+                          UserRepository userRepository,
+                          SimpMessagingTemplate messagingTemplate) {
+        this.messageRepository = messageRepository;
+        this.channelRepository = channelRepository;
+        this.enrollmentRepository = enrollmentRepository;
+        this.userRepository = userRepository;
+        this.messagingTemplate = messagingTemplate;
+    }
 
     @Transactional
     public MessageResponse sendMessage(UUID channelId, SendMessageRequest request, UUID userId) {
@@ -57,7 +69,6 @@ public class MessageService {
 
         MessageResponse response = toResponse(message);
 
-        // Realtime broadcast to /topic/channels.{channelId}
         try {
             messagingTemplate.convertAndSend(
                     "/topic/channels." + channelId,
@@ -103,11 +114,10 @@ public class MessageService {
         return MessageResponse.builder()
                 .id(message.getId())
                 .channelId(message.getChannel().getId())
-                .author(MessageResponse.AuthorDto.builder()
-                        .id(message.getAuthor().getId())
-                        .displayName(message.getAuthor().getDisplayName())
-                        .email(message.getAuthor().getEmail())
-                        .build())
+                .author(new MessageResponse.AuthorDto(
+                        message.getAuthor().getId(),
+                        message.getAuthor().getDisplayName(),
+                        message.getAuthor().getEmail()))
                 .content(message.getContent())
                 .parentMessageId(message.getParentMessageId())
                 .pinned(message.getPinned())
