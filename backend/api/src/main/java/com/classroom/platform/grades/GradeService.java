@@ -1,5 +1,7 @@
 package com.classroom.platform.grades;
 
+import com.classroom.platform.assignments.Assignment;
+import com.classroom.platform.assignments.AssignmentRepository;
 import com.classroom.platform.classrooms.Enrollment;
 import com.classroom.platform.classrooms.EnrollmentRepository;
 import com.classroom.platform.common.ApiException;
@@ -13,8 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,15 +27,18 @@ public class GradeService {
     private final SubmissionRepository submissionRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
+    private final AssignmentRepository assignmentRepository;
 
     public GradeService(GradeRepository gradeRepository,
                         SubmissionRepository submissionRepository,
                         EnrollmentRepository enrollmentRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository,
+                        AssignmentRepository assignmentRepository) {
         this.gradeRepository = gradeRepository;
         this.submissionRepository = submissionRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.userRepository = userRepository;
+        this.assignmentRepository = assignmentRepository;
     }
 
     @Transactional
@@ -98,6 +104,58 @@ public class GradeService {
         return gradeRepository.findAllByClassroomId(classroomId).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getMyClassroomGrades(UUID classroomId, UUID userId) {
+        if (!enrollmentRepository.existsByClassroomIdAndUserId(classroomId, userId)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "You are not enrolled in this classroom");
+        }
+
+        List<Assignment> assignments = assignmentRepository.findAllByClassroomIdAndDeletedAtIsNullOrderByDueDateAsc(classroomId);
+
+        return assignments.stream().map(asgn -> {
+            Optional<Submission> subOpt = submissionRepository.findTopByAssignmentIdAndStudentIdOrderByVersionDesc(asgn.getId(), userId);
+
+            String status = "ASSIGNED";
+            Instant submittedAt = null;
+            String receiptCode = null;
+            BigDecimal score = null;
+            String feedback = null;
+            UUID submissionId = null;
+
+            if (subOpt.isPresent()) {
+                Submission sub = subOpt.get();
+                submissionId = sub.getId();
+                status = sub.getStatus();
+                submittedAt = sub.getSubmittedAt();
+                receiptCode = sub.getReceiptCode();
+
+                Optional<Grade> gradeOpt = gradeRepository.findBySubmissionId(sub.getId());
+                if (gradeOpt.isPresent()) {
+                    Grade g = gradeOpt.get();
+                    if (Boolean.TRUE.equals(g.getReleased())) {
+                        score = g.getScore();
+                        feedback = g.getPrivateFeedback();
+                    }
+                }
+            } else if (asgn.getDueDate() != null && Instant.now().isAfter(asgn.getDueDate())) {
+                status = "MISSING";
+            }
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("assignmentId", asgn.getId());
+            map.put("title", asgn.getTitle());
+            map.put("dueDate", asgn.getDueDate() != null ? asgn.getDueDate().toString() : null);
+            map.put("maxPoints", asgn.getMaxPoints());
+            map.put("status", status);
+            map.put("submissionId", submissionId);
+            map.put("submittedAt", submittedAt != null ? submittedAt.toString() : null);
+            map.put("receiptCode", receiptCode);
+            map.put("score", score);
+            map.put("feedback", feedback);
+            return map;
+        }).collect(Collectors.toList());
     }
 
     private GradeResponse toResponse(Grade grade) {

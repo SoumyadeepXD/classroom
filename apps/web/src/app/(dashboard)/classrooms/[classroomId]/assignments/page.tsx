@@ -12,6 +12,9 @@ import {
   ChevronRight,
   Clock,
   X,
+  Filter,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 
 interface Assignment {
@@ -23,13 +26,22 @@ interface Assignment {
   maxPoints: number;
 }
 
+interface ClassroomItem {
+  id: string;
+  name: string;
+  courseCode: string;
+  role: string;
+}
+
 export default function ClassworkAssignmentsPage() {
   const { classroomId } = useParams<{ classroomId: string }>();
 
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [userRole, setUserRole] = useState<string>('STUDENT');
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'upcoming' | 'overdue'>('all');
 
-  // Modal
+  // Modal (Instructors only)
   const [showModal, setShowModal] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -40,15 +52,19 @@ export default function ClassworkAssignmentsPage() {
 
   useEffect(() => {
     if (classroomId) {
-      loadAssignments();
+      loadRoleAndAssignments();
     }
   }, [classroomId]);
 
-  const loadAssignments = async () => {
+  const loadRoleAndAssignments = async () => {
     try {
       setLoading(true);
-      const data = await apiFetch<Assignment[]>(`/classrooms/${classroomId}/assignments`);
-      setAssignments(data || []);
+      const [cls, asgns] = await Promise.all([
+        apiFetch<ClassroomItem>(`/classrooms/${classroomId}`),
+        apiFetch<Assignment[]>(`/classrooms/${classroomId}/assignments`),
+      ]);
+      if (cls) setUserRole(cls.role);
+      setAssignments(asgns || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -78,13 +94,23 @@ export default function ClassworkAssignmentsPage() {
       setDescription('');
       setDueDate('');
       setMaxPoints('100');
-      await loadAssignments();
+      await loadRoleAndAssignments();
     } catch (err: any) {
       setModalError(err.message || 'Failed to create assignment');
     } finally {
       setCreating(false);
     }
   };
+
+  const isInstructor = userRole === 'TEACHER' || userRole === 'TA';
+
+  const filteredAssignments = assignments.filter((asgn) => {
+    if (filter === 'all') return true;
+    const isOverdue = new Date(asgn.dueDate).getTime() < Date.now();
+    if (filter === 'upcoming') return !isOverdue;
+    if (filter === 'overdue') return isOverdue;
+    return true;
+  });
 
   return (
     <div className="h-full flex flex-col overflow-y-auto p-8 bg-[#313338]">
@@ -93,27 +119,66 @@ export default function ClassworkAssignmentsPage() {
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <BookOpen className="w-7 h-7 text-emerald-400" />
-            Classwork & Assignments
+            Classwork & Tasks
           </h1>
           <p className="text-sm text-gray-400 mt-1">
-            Access course projects, submission deadlines, and rubric evaluations.
+            {isInstructor
+              ? 'Publish coursework, configure deadlines, and inspect student turn-in records.'
+              : 'View assigned course projects, submit deliverable receipts, and check evaluated scores.'}
           </p>
         </div>
 
+        {/* ONLY TEACHERS OR TAs SEE THE CREATE ASSIGNMENT BUTTON */}
+        {isInstructor && (
+          <button
+            onClick={() => {
+              setModalError('');
+              setShowModal(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-emerald-600/30"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Assignment</span>
+          </button>
+        )}
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 mt-6">
         <button
-          onClick={() => {
-            setModalError('');
-            setShowModal(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-emerald-600/30"
+          onClick={() => setFilter('all')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            filter === 'all'
+              ? 'bg-[#2b2d31] text-white border border-gray-700'
+              : 'text-gray-400 hover:text-white'
+          }`}
         >
-          <Plus className="w-4 h-4" />
-          <span>New Assignment</span>
+          All ({assignments.length})
+        </button>
+        <button
+          onClick={() => setFilter('upcoming')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            filter === 'upcoming'
+              ? 'bg-[#2b2d31] text-emerald-400 border border-emerald-500/30'
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Upcoming
+        </button>
+        <button
+          onClick={() => setFilter('overdue')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            filter === 'overdue'
+              ? 'bg-[#2b2d31] text-rose-400 border border-rose-500/30'
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Past Due
         </button>
       </div>
 
       {/* Assignments List */}
-      <div className="mt-8">
+      <div className="mt-6">
         {loading ? (
           <div className="text-center py-20 text-gray-500">Loading assignments...</div>
         ) : assignments.length === 0 ? (
@@ -121,18 +186,26 @@ export default function ClassworkAssignmentsPage() {
             <BookOpen className="w-12 h-12 text-gray-600 mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-white">No assignments posted yet</h3>
             <p className="text-sm text-gray-400 mt-1 mb-6">
-              Instructors have not assigned any tasks or homework for this course yet.
+              {isInstructor
+                ? 'Publish your first course assignment to assign deliverables to enrolled students.'
+                : 'Your instructors have not published any assignments for this course yet.'}
             </p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-500 rounded-xl text-sm font-medium"
-            >
-              Post First Assignment
-            </button>
+            {isInstructor && (
+              <button
+                onClick={() => setShowModal(true)}
+                className="px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-500 rounded-xl text-sm font-medium shadow-md shadow-emerald-600/30"
+              >
+                Post First Assignment
+              </button>
+            )}
+          </div>
+        ) : filteredAssignments.length === 0 ? (
+          <div className="text-center py-16 text-gray-500 text-sm">
+            No assignments match the selected filter.
           </div>
         ) : (
           <div className="space-y-4 max-w-4xl">
-            {assignments.map((asgn) => {
+            {filteredAssignments.map((asgn) => {
               const due = new Date(asgn.dueDate);
               const isOverdue = due.getTime() < Date.now();
 
@@ -180,8 +253,8 @@ export default function ClassworkAssignmentsPage() {
         )}
       </div>
 
-      {/* CREATE ASSIGNMENT MODAL */}
-      {showModal && (
+      {/* CREATE ASSIGNMENT MODAL (Rendered strictly for instructors) */}
+      {isInstructor && showModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
           <div className="bg-[#2b2d31] rounded-2xl border border-gray-800 max-w-lg w-full p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">

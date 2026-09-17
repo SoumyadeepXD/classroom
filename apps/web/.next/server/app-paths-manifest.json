@@ -3,9 +3,13 @@
   "/(auth)/register/page": "app/(auth)/register/page.js",
   "/(auth)/login/page": "app/(auth)/login/page.js",
   "/(dashboard)/classrooms/[classroomId]/channels/[channelId]/page": "app/(dashboard)/classrooms/[classroomId]/channels/[channelId]/page.js",
-  "/(dashboard)/classrooms/[classroomId]/grades/page": "app/(dashboard)/classrooms/[classroomId]/grades/page.js",
-  "/(dashboard)/classrooms/[classroomId]/page": "app/(dashboard)/classrooms/[classroomId]/page.js",
-  "/(dashboard)/page": "app/(dashboard)/page.js",
   "/(dashboard)/classrooms/[classroomId]/assignments/[assignmentId]/page": "app/(dashboard)/classrooms/[classroomId]/assignments/[assignmentId]/page.js",
-  "/(dashboard)/classrooms/[classroomId]/assignments/page": "app/(dashboard)/classrooms/[classroomId]/assignments/page.js"
+  "/(dashboard)/classrooms/[classroomId]/grades/page": "app/(dashboard)/classrooms/[classroomId]/grades/page.js",
+  "/(dashboard)/classrooms/[classroomId]/channels/page": "app/(dashboard)/classrooms/[classroomId]/channels/page.js",
+  "/(dashboard)/classrooms/[classroomId]/classwork/page": "app/(dashboard)/classrooms/[classroomId]/classwork/page.js",
+  "/(dashboard)/classrooms/[classroomId]/assignments/page": "app/(dashboard)/classrooms/[classroomId]/assignments/page.js",
+  "/(dashboard)/classrooms/[classroomId]/people/page": "app/(dashboard)/classrooms/[classroomId]/people/page.js",
+  "/(dashboard)/page": "app/(dashboard)/page.js",
+  "/(dashboard)/classrooms/[classroomId]/page": "app/(dashboard)/classrooms/[classroomId]/page.js",
+  "/(dashboard)/classrooms/[classroomId]/stream/page": "app/(dashboard)/classrooms/[classroomId]/stream/page.js"
 }

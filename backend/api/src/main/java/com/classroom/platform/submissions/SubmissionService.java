@@ -66,6 +66,7 @@ public class SubmissionService {
         } catch (Exception ignored) {}
 
         String status = (assignment.getDueDate() != null && Instant.now().isAfter(assignment.getDueDate())) ? "LATE" : "SUBMITTED";
+        String receiptCode = "RCPT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
         Submission submission = Submission.builder()
                 .assignment(assignment)
@@ -73,6 +74,7 @@ public class SubmissionService {
                 .status(status)
                 .version(nextVersion)
                 .fileIds(filesJson)
+                .receiptCode(receiptCode)
                 .submittedAt(Instant.now())
                 .build();
 
@@ -105,7 +107,9 @@ public class SubmissionService {
     }
 
     private SubmissionResponse toResponse(Submission submission) {
-        String receiptCode = "RCPT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        String receiptCode = submission.getReceiptCode() != null
+                ? submission.getReceiptCode()
+                : "RCPT-" + submission.getId().toString().substring(0, 8).toUpperCase();
 
         return SubmissionResponse.builder()
                 .id(submission.getId())

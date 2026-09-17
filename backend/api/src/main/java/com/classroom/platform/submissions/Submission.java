@@ -39,6 +39,9 @@ public class Submission {
     @Column(name = "file_ids", columnDefinition = "jsonb", nullable = false)
     private String fileIds = "[]";
 
+    @Column(name = "receipt_code", length = 100)
+    private String receiptCode;
+
     @CreationTimestamp
     @Column(name = "submitted_at", nullable = false)
     private Instant submittedAt;
@@ -54,13 +57,14 @@ public class Submission {
     public Submission() {}
 
     public Submission(UUID id, Assignment assignment, User student, String status,
-                      Integer version, String fileIds, Instant submittedAt) {
+                      Integer version, String fileIds, String receiptCode, Instant submittedAt) {
         this.id = id;
         this.assignment = assignment;
         this.student = student;
         this.status = status != null ? status : "SUBMITTED";
         this.version = version != null ? version : 1;
         this.fileIds = fileIds != null ? fileIds : "[]";
+        this.receiptCode = receiptCode;
         this.submittedAt = submittedAt;
     }
 
@@ -75,6 +79,7 @@ public class Submission {
         private String status = "SUBMITTED";
         private Integer version = 1;
         private String fileIds = "[]";
+        private String receiptCode;
         private Instant submittedAt;
 
         public Builder id(UUID id) { this.id = id; return this; }
@@ -83,10 +88,11 @@ public class Submission {
         public Builder status(String status) { this.status = status; return this; }
         public Builder version(Integer version) { this.version = version; return this; }
         public Builder fileIds(String fileIds) { this.fileIds = fileIds; return this; }
+        public Builder receiptCode(String receiptCode) { this.receiptCode = receiptCode; return this; }
         public Builder submittedAt(Instant submittedAt) { this.submittedAt = submittedAt; return this; }
 
         public Submission build() {
-            return new Submission(id, assignment, student, status, version, fileIds, submittedAt);
+            return new Submission(id, assignment, student, status, version, fileIds, receiptCode, submittedAt);
         }
     }
 
@@ -107,6 +113,9 @@ public class Submission {
 
     public String getFileIds() { return fileIds; }
     public void setFileIds(String fileIds) { this.fileIds = fileIds; }
+
+    public String getReceiptCode() { return receiptCode; }
+    public void setReceiptCode(String receiptCode) { this.receiptCode = receiptCode; }
 
     public Instant getSubmittedAt() { return submittedAt; }
     public void setSubmittedAt(Instant submittedAt) { this.submittedAt = submittedAt; }

@@ -2,6 +2,7 @@ package com.classroom.platform.messaging;
 
 import com.classroom.platform.channels.Channel;
 import com.classroom.platform.channels.ChannelRepository;
+import com.classroom.platform.classrooms.Enrollment;
 import com.classroom.platform.classrooms.EnrollmentRepository;
 import com.classroom.platform.common.ApiException;
 import com.classroom.platform.messaging.dto.MessageResponse;
@@ -49,8 +50,13 @@ public class MessageService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "CHANNEL_NOT_FOUND", "Channel not found"));
 
-        if (!enrollmentRepository.existsByClassroomIdAndUserId(channel.getClassroom().getId(), userId)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "You are not enrolled in this classroom");
+        Enrollment enrollment = enrollmentRepository.findByClassroomIdAndUserId(channel.getClassroom().getId(), userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "You are not enrolled in this classroom"));
+
+        if ("ANNOUNCEMENT".equalsIgnoreCase(channel.getType())) {
+            if (!"TEACHER".equals(enrollment.getRole()) && !"TA".equals(enrollment.getRole())) {
+                throw new ApiException(HttpStatus.FORBIDDEN, "ANNOUNCEMENT_READ_ONLY", "Only instructors can post in announcement channels");
+            }
         }
 
         User user = userRepository.findById(userId)
@@ -108,6 +114,33 @@ public class MessageService {
         return messageRepository.findAllByParentMessageIdWithAuthor(messageId).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public MessageResponse togglePinMessage(UUID messageId, UUID userId) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "MESSAGE_NOT_FOUND", "Message not found"));
+
+        UUID classroomId = message.getChannel().getClassroom().getId();
+        Enrollment enrollment = enrollmentRepository.findByClassroomIdAndUserId(classroomId, userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "You are not enrolled in this classroom"));
+
+        if (!"TEACHER".equals(enrollment.getRole()) && !"TA".equals(enrollment.getRole()) && !message.getAuthor().getId().equals(userId)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Only instructors or message authors can pin messages");
+        }
+
+        message.setPinned(!Boolean.TRUE.equals(message.getPinned()));
+        message = messageRepository.save(message);
+
+        MessageResponse response = toResponse(message);
+        try {
+            messagingTemplate.convertAndSend(
+                    "/topic/channels." + message.getChannel().getId(),
+                    Map.of("eventType", "MESSAGE_PIN_UPDATED", "data", response)
+            );
+        } catch (Exception ignored) {}
+
+        return response;
     }
 
     private MessageResponse toResponse(Message message) {

@@ -49,4 +49,13 @@ public class GradeController {
         List<GradeResponse> gradebook = gradeService.getClassroomGradebook(classroomId, principal.getId());
         return ResponseEntity.ok(ApiResponse.ok(gradebook));
     }
+
+    @GetMapping("/classrooms/{classroomId}/grades/me")
+    public ResponseEntity<ApiResponse<List<java.util.Map<String, Object>>>> getMyClassroomGrades(
+            @PathVariable("classroomId") UUID classroomId,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        List<java.util.Map<String, Object>> grades = gradeService.getMyClassroomGrades(classroomId, principal.getId());
+        return ResponseEntity.ok(ApiResponse.ok(grades));
+    }
 }

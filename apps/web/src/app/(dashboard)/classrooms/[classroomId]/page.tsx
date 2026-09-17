@@ -9,7 +9,7 @@ export default function ClassroomEntryPage() {
 
   useEffect(() => {
     if (classroomId) {
-      router.replace(`/classrooms/${classroomId}/assignments`);
+      router.replace(`/classrooms/${classroomId}/stream`);
     }
   }, [classroomId, router]);
 

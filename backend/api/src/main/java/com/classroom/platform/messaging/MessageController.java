@@ -51,4 +51,13 @@ public class MessageController {
         List<MessageResponse> replies = messageService.getThreadReplies(messageId, principal.getId());
         return ResponseEntity.ok(ApiResponse.ok(replies));
     }
+
+    @PutMapping("/messages/{messageId}/pin")
+    public ResponseEntity<ApiResponse<MessageResponse>> togglePinMessage(
+            @PathVariable("messageId") UUID messageId,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        MessageResponse response = messageService.togglePinMessage(messageId, principal.getId());
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
 }

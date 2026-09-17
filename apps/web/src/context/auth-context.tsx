@@ -36,9 +36,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token && savedUser) {
       try {
         setUser(JSON.parse(savedUser));
+        // Verify token validity with backend asynchronously
+        apiFetch<User>('/users/me')
+          .then((freshUser) => {
+            if (freshUser) {
+              setUser(freshUser);
+              localStorage.setItem('current_user', JSON.stringify(freshUser));
+            }
+          })
+          .catch(() => {
+            // If token is invalid or rejected, purge and log out
+            logout();
+          });
       } catch (e) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('current_user');
+        logout();
       }
     }
     setLoading(false);

@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Sparkles,
   X,
+  LogOut,
 } from 'lucide-react';
 
 interface ClassroomItem {
@@ -26,7 +27,7 @@ interface ClassroomItem {
 }
 
 export default function DashboardHomePage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [classrooms, setClassrooms] = useState<ClassroomItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -115,6 +116,13 @@ export default function DashboardHomePage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-[#2b2d31] rounded-xl border border-gray-700/50 text-xs">
+            <div className="w-6 h-6 rounded-full bg-brand-600 flex items-center justify-center font-bold text-white text-[11px]">
+              {user?.displayName?.charAt(0).toUpperCase()}
+            </div>
+            <span className="font-semibold text-white truncate max-w-[140px]">{user?.displayName}</span>
+          </div>
+
           <button
             onClick={() => {
               setModalError('');
@@ -135,6 +143,15 @@ export default function DashboardHomePage() {
           >
             <Plus className="w-4 h-4" />
             <span>Create Course</span>
+          </button>
+
+          <button
+            onClick={logout}
+            title="Sign Out"
+            className="flex items-center gap-1.5 px-3 py-2.5 bg-[#2b2d31] hover:bg-rose-500/20 text-gray-400 hover:text-rose-400 rounded-xl text-sm font-medium transition-colors border border-gray-700/50"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Sign Out</span>
           </button>
         </div>
       </header>
@@ -170,8 +187,8 @@ export default function DashboardHomePage() {
             {classrooms.map((cls) => (
               <Link
                 key={cls.id}
-                href={`/classrooms/${cls.id}/assignments`}
-                className="group bg-[#2b2d31] hover:bg-[#35373c] rounded-2xl p-6 border border-gray-800/80 hover:border-brand-500/50 transition-all duration-200 flex flex-col justify-between shadow-lg"
+                href={`/classrooms/${cls.id}/stream`}
+                className="group bg-[#2b2d31] hover:bg-[#35373c] border border-gray-800 hover:border-gray-700 rounded-2xl p-6 transition-all duration-200 shadow-md hover:shadow-xl flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">

@@ -29,6 +29,14 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
   const body = await response.json().catch(() => null);
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('current_user');
+      if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+        window.location.href = '/login';
+      }
+    }
+
     const errorBody = body?.error;
     throw new ApiError(
       errorBody?.code || 'API_ERROR',

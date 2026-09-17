@@ -71,6 +71,7 @@ export default function RegisterPage() {
               <input
                 type="text"
                 required
+                autoComplete="name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Alex Mercer"
@@ -88,6 +89,7 @@ export default function RegisterPage() {
               <input
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="student@university.edu"
@@ -106,6 +108,7 @@ export default function RegisterPage() {
                 type="password"
                 required
                 minLength={8}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimum 8 characters"
